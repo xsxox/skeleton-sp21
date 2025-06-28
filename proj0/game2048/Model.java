@@ -1,11 +1,12 @@
 package game2048;
 
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author sunrise
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -106,13 +107,55 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
+    //列处理，向上移动棋盘
+    public Board col_helper(Board b) {
+        for (int row = 0; row < b.size(); row++) {
+            ArrayList<Tile> tiles = new ArrayList<>();
+
+            //向数组中加入非null板块
+            for (int col = 0; col < b.size(); col++) {
+                Tile t = b.tile(col, row);
+                if (t != null) {
+                    tiles.add(t);
+                }
+            }
+            //比较，合并板块
+            for (int i = 0; i < tiles.size() - 1; i++) {
+                if (tiles.get(i).value() == tiles.get(i + 1).value()) {
+                    tiles.get(i).merge(tiles.get(i).col(), tiles.get(i).row(), tiles.get(i + 1));
+                    score += tiles.get(i).value();
+                    tiles.remove(i + 1);
+                }
+            }
+            //向上移动版块
+            int newRow = b.size()-1;
+            for (Tile t : tiles) {
+                if (t.row() != newRow) {
+                    b.move(t.col(),newRow, t);
+                }
+                newRow--;
+            }
+        }
+
+        return b;
+    }
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
+        Board original = new Board(this.size()); // 创建副本
+        copyState(original, this.board); // 复制当前状态到original
+        if (side == Side.NORTH) {
+            col_helper(this.board);
+        }
+        if(side == Side.SOUTH){
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        }
+        // TODO:其他方向的处理...
+
+        // 比较操作前后的状态
+        changed = !isEqual(original, this.board);
 
         checkGameOver();
         if (changed) {
@@ -120,6 +163,37 @@ public class Model extends Observable {
         }
         return changed;
     }
+
+
+    private void copyState(Board dest, Board src) {
+        for (int row = 0; row < src.size(); row++) {
+            for (int col = 0; col < src.size(); col++) {
+                Tile t = src.tile(col, row);
+                if (t != null) {
+                    dest.addTile(Tile.create(t.value(), col, row));
+                }
+            }
+        }
+    }
+
+
+    private boolean isEqual(Board b1, Board b2) {
+        if (b1.size() != b2.size()) return false;
+
+        for (int row = 0; row < b1.size(); row++) {
+            for (int col = 0; col < b1.size(); col++) {
+                Tile t1 = b1.tile(col, row);
+                Tile t2 = b2.tile(col, row);
+
+                if (t1 == null && t2 != null) return false;
+                if (t1 != null && t2 == null) return false;
+                if (t1 != null && t2 != null && t1.value() != t2.value()) return false;
+            }
+        }
+
+        return true;
+    }
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -137,7 +211,15 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int col = 0;
+        int row = 0;
+        for(col=0;col<b.size();col++) {
+            for (row = 0; row < b.size(); row++) {
+                if (b.tile(col, row) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -147,7 +229,14 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        int col, row;
+        for (col = 0; col < b.size(); col++) {
+            for (row = 0; row < b.size(); row++) {
+                if (b.tile(col, row) != null && b.tile(col, row).value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,13 +247,35 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        if (emptySpaceExists(b)) {
+            return true;
+        }
+
+        for (int row = 0; row < b.size(); row++) {
+            for (int col = 0; col < b.size() - 1; col++) {
+                Tile current = b.tile(col, row);
+                Tile right = b.tile(col + 1, row);
+                if (current != null && right != null && current.value() == right.value()) {
+                    return true;
+                }
+            }
+        }
+
+        for (int col = 0; col < b.size(); col++) {
+            for (int row = 0; row < b.size() - 1; row++) {
+                Tile current = b.tile(col, row);
+                Tile below = b.tile(col, row + 1);
+                if (current != null && below != null && current.value() == below.value()) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
-
     @Override
-     /** Returns the model as a string, used for debugging. */
+    /** Returns the model as a string, used for debugging. */
     public String toString() {
         Formatter out = new Formatter();
         out.format("%n[%n");
