@@ -35,16 +35,16 @@ class GUISource implements InputSource {
     public String getKey() {
         String command = _source.readKey();
         switch (command) {
-            case "↑" :
+            case "W" :
                 command = "Up";
                 break;
-            case "→" :
+            case "D" :
                 command = "Right";
                 break;
-            case "↓" :
+            case "S" :
                 command = "Down";
                 break;
-            case "←" :
+            case "A" :
                 command = "Left";
                 break;
             default :
@@ -66,7 +66,7 @@ class GUISource implements InputSource {
     }
 
     @Override
-     /** Return a randomly positioned tile with either value of 2 with 
+     /** Return a randomly positioned tile with either value of 2 with
       * probability _probOf2 or a value of 4 with probability 1 - _probOf2 in a
       * board with size SIZE. */
     public Tile getNewTile(int size) {

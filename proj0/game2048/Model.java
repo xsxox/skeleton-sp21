@@ -1,12 +1,11 @@
 package game2048;
 
-import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author sunrise
+ *  @author 感谢Github开源
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -96,6 +95,7 @@ public class Model extends Observable {
     }
 
     /** Tilt the board toward SIDE. Return true iff this changes the board.
+     *
      * 1. If two Tile objects are adjacent in the direction of motion and have
      *    the same value, they are merged into one Tile of twice the original
      *    value and that new value is added to the score instance variable
@@ -106,60 +106,67 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
-
-    //列处理，向上移动棋盘
-    public Board col_helper(Board b) {
-        for (int row = 0; row < b.size(); row++) {
-            ArrayList<Tile> tiles = new ArrayList<>();
-
-            //向数组中加入非null板块
-            for (int col = 0; col < b.size(); col++) {
-                Tile t = b.tile(col, row);
-                if (t != null) {
-                    tiles.add(t);
-                }
-            }
-            //比较，合并板块
-            for (int i = 0; i < tiles.size() - 1; i++) {
-                Tile current = tiles.get(i);
-                Tile next = tiles.get(i + 1);
-                if (current.value() == next.value()) {
-                    Tile merged = current.merge(current.col(), current.row(), next);
-                    this.score += merged.value();
-                    tiles.remove(i + 1);
-                    i--;
-                }
-            }
-
-
-            //向上移动版块
-            int newRow = b.size()-1;
-            for (Tile t : tiles) {
-                if (t.row() != newRow) {
-                    b.move(t.col(),newRow, t);
-                }
-                newRow--;
-            }
-        }
-
-        return b;
-    }
-
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-        Board original = new Board(this.size()); // 创建副本
-        copyState(original, this.board); // 复制当前状态到original
-        if (side == Side.NORTH) {
-            col_helper(this.board);
-        }
-        if(side == Side.SOUTH){
 
-        }
-        // TODO:其他方向的处理...
+        // Modify this.board (and perhaps this.score) to account
+        // for the tilt to the Side SIDE. If the board changed, set the
+        // changed local variable to true.
+        board.setViewingPerspective(side);
 
-        // 比较操作前后的状态
-        changed = !isEqual(original, this.board);
+
+//        Tile t = board.tile(2, 1);
+//        board.move(2, 3, t);
+//        t = board.tile(2, 0);
+//        board.move(2, 2, t);
+
+        /**
+         *  c,r
+         *  0,3  1,3  2,3  3,3
+         *  0,2  1,2  2,2  3,2
+         *  0,1  1,1  2,1  3,1
+         *  0,0  1,0  2,0  3,0
+         */
+        int size = board.size();;
+        boolean[][] merged = new boolean[board.size()][board.size()];
+        for (int r = size-2; r >= 0; r--) {
+            for (int c = 0; c <size; c++) {
+                Tile t = board.tile(c, r);
+
+                if (t != null) {
+                    // 处理当前tile：判断是否需要move，需要move到哪里，是否merge？
+                    int dc = c, dr = r + 1;
+                    while (dr <= size-1) {
+                        Tile dt = board.tile(dc, dr);
+                        if (dt != null) {
+                            // 如果不应该移动到(dc,dr)，dr回退一格
+                            if (merged[dc][dr] || dt.value() != t.value()) {
+                                dr--;
+                            }
+                            break;
+                        }
+
+                        if (dr == size-1) {
+                            break;
+                        }
+
+                        dr++;
+                    }
+
+                    if (dr != r) {
+                        changed = true;
+                    }
+                    if (board.move(dc, dr, t)) {
+                        merged[dc][dr] = true;
+                        score += board.tile(dc, dr).value();
+                    }
+                }
+            }
+        }
+
+
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -167,37 +174,6 @@ public class Model extends Observable {
         }
         return changed;
     }
-
-
-    private void copyState(Board dest, Board src) {
-        for (int row = 0; row < src.size(); row++) {
-            for (int col = 0; col < src.size(); col++) {
-                Tile t = src.tile(col, row);
-                if (t != null) {
-                    dest.addTile(Tile.create(t.value(), col, row));
-                }
-            }
-        }
-    }
-
-
-    private boolean isEqual(Board b1, Board b2) {
-        if (b1.size() != b2.size()) return false;
-
-        for (int row = 0; row < b1.size(); row++) {
-            for (int col = 0; col < b1.size(); col++) {
-                Tile t1 = b1.tile(col, row);
-                Tile t2 = b2.tile(col, row);
-
-                if (t1 == null && t2 != null) return false;
-                if (t1 != null && t2 == null) return false;
-                if (t1 != null && t2 != null && t1.value() != t2.value()) return false;
-            }
-        }
-
-        return true;
-    }
-
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -215,12 +191,9 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        int col,row;
-        for(col=0;col<b.size();col++) {
-            for (row = 0; row < b.size(); row++) {
-                if (b.tile(col, row) == null) {
-                    return true;
-                }
+        for (Tile t : b) {
+            if (t == null) {
+                return true;
             }
         }
         return false;
@@ -232,12 +205,9 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        int col, row;
-        for (col = 0; col < b.size(); col++) {
-            for (row = 0; row < b.size(); row++) {
-                if (b.tile(col, row) != null && b.tile(col, row).value() == MAX_PIECE) {
-                    return true;
-                }
+        for (Tile t : b) {
+            if (t != null && t.value() == MAX_PIECE) {
+                return true;
             }
         }
         return false;
