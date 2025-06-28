@@ -96,7 +96,6 @@ public class Model extends Observable {
     }
 
     /** Tilt the board toward SIDE. Return true iff this changes the board.
-     *
      * 1. If two Tile objects are adjacent in the direction of motion and have
      *    the same value, they are merged into one Tile of twice the original
      *    value and that new value is added to the score instance variable
@@ -122,12 +121,17 @@ public class Model extends Observable {
             }
             //比较，合并板块
             for (int i = 0; i < tiles.size() - 1; i++) {
-                if (tiles.get(i).value() == tiles.get(i + 1).value()) {
-                    tiles.get(i).merge(tiles.get(i).col(), tiles.get(i).row(), tiles.get(i + 1));
-                    score += tiles.get(i).value();
+                Tile current = tiles.get(i);
+                Tile next = tiles.get(i + 1);
+                if (current.value() == next.value()) {
+                    Tile merged = current.merge(current.col(), current.row(), next);
+                    this.score += merged.value();
                     tiles.remove(i + 1);
+                    i--;
                 }
             }
+
+
             //向上移动版块
             int newRow = b.size()-1;
             for (Tile t : tiles) {
@@ -211,8 +215,7 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        int col = 0;
-        int row = 0;
+        int col,row;
         for(col=0;col<b.size();col++) {
             for (row = 0; row < b.size(); row++) {
                 if (b.tile(col, row) == null) {
