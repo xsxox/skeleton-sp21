@@ -46,6 +46,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
     }
 
     //需注意head变化
+    @Override
     public void addFirst(T item) {
 
         if(size>=length){
@@ -57,6 +58,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
     }
 
     //addLast无head变化
+    @Override
     public void addLast(T item) {
 
         if(size>=length){
@@ -66,14 +68,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
             size++;
     }
 
-    public boolean isEmpty() {
-        return size==0;
-    }
-
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public void printDeque() {
         for(int i=head;i<size+head;i++){
             System.out.print(DA[i%length]);
@@ -82,6 +82,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
         System.out.println();
     }
 
+    @Override
     public T removeFirst() {
         if(isEmpty()) return null;
         else{
@@ -96,7 +97,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
         }
     }
 
-
+    @Override
     public T removeLast() {
         if(isEmpty()) return null;
         else{
@@ -110,6 +111,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
         }
     }
 
+    @Override
     public T get(int index) {
         //illegal index returns to null;
         if (index>size-1 || index < 0) return null;

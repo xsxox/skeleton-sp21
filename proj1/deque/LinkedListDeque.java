@@ -56,11 +56,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public boolean isEmpty(){
-        return size == 0;
-    }
-
-    @Override
     public void printDeque() {
         Node p = head.next;
         while (p != tail) {
@@ -69,7 +64,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         }
         System.out.println();
     }
-
 
     @Override
     public T removeFirst() {
@@ -122,7 +116,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
 
-    @Override
     public Iterator<T> iterator() {
         return new LinkedListDequeIterator();
     }
@@ -143,7 +136,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
 
-    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Deque)) {
             return false;
