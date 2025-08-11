@@ -9,7 +9,7 @@ public class IntList {
         rest = r;
     }
 
-    /** Return the size of the list using... recursion! */
+    /** Return the size of the list using... recursion! */// ?
     public int size() {
         if (rest == null) {
             return 1;
