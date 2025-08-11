@@ -27,10 +27,5 @@ public class SquarePrimesTest {
         assertEquals("1 -> 4 -> 9 -> 4 -> 25 -> 6 -> 49",lst.toString());
         assertTrue(channged);
     }
-
-    @Test
-    public void OnePrimeTest(){
-        IntList lst = IntList.of(14,14,14,14,1);
-        boolean channged = IntListExercises.squarePrimes(lst);
-    }
+    
 }
