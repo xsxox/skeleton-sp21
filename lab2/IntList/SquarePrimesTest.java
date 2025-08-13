@@ -27,5 +27,5 @@ public class SquarePrimesTest {
         assertEquals("1 -> 4 -> 9 -> 4 -> 25 -> 6 -> 49",lst.toString());
         assertTrue(channged);
     }
-    
+
 }
